@@ -14,6 +14,8 @@
 int yylex();
 void yyerror(const char *s);
 
+char ruta_anterior[1024] = "";
+
 void mostrar_prompt() {
     char cwd[1024];
     if (getcwd(cwd, sizeof(cwd)) != NULL) {
@@ -22,7 +24,6 @@ void mostrar_prompt() {
         printf("\n> ");
     }
 }
-
 void ejecutar_comando(const char* cmd_base, const char* args) {
     char buffer[2048];
     if (args && strlen(args) > 0) {
@@ -34,28 +35,112 @@ void ejecutar_comando(const char* cmd_base, const char* args) {
 }
 
 void cambiar_directorio(const char* path) {
-    if (path == NULL || strlen(path) == 0) {
-        char cwd[1024];
-        if (getcwd(cwd, sizeof(cwd)) != NULL) {
-            printf("%s\n", cwd);
-        }
-    } else {
-        if (chdir(path) != 0) {
-            perror("Error al cambiar de directorio");
+    char cwd_actual[1024];
+    if (getcwd(cwd_actual, sizeof(cwd_actual)) != NULL) {
+        if (path == NULL || strlen(path) == 0) {
+            printf("%s\n", cwd_actual);
+        } else {
+            // Guardar la ruta actual como anterior antes de cambiar
+            strcpy(ruta_anterior, cwd_actual);
+
+            char limpio[1024];
+            strncpy(limpio, path, sizeof(limpio));
+            if (limpio[0] == '\"') {
+                int len = strlen(limpio);
+                if (limpio[len-1] == '\"') {
+                    limpio[len-1] = '\0';
+                    memmove(limpio, limpio + 1, len);
+                }
+            }
+
+            if (chdir(limpio) != 0) {
+                perror("Error al cambiar de directorio");
+            }
         }
     }
 }
 
+void volver_directorio() {
+    if (strlen(ruta_anterior) > 0) {
+        char temporal[1024];
+        getcwd(temporal, sizeof(temporal));
+        if (chdir(ruta_anterior) == 0) {
+            printf("Regresando a: %s\n", ruta_anterior);
+            strcpy(ruta_anterior, temporal); 
+        } else {
+            perror("Error al volver al directorio anterior");
+        }
+    } else {
+        printf("No hay un directorio previo registrado.\n");
+    }
+}
+
 void imprimir_ayuda_general() {
-    printf("\nPara obtener mas informacion acerca de un comando especifico, escriba AYUDA\n");
-    printf("seguido del nombre de comando\n");
-    printf("ASOCIAR        Muestra o modifica las asociaciones de las extensiones de archivos.\n");
-    printf("ATRIBUTO       Muestra o cambia los atributos del archivo.\n");
-    printf("INTERRUMPIR    Establece o elimina la comprobacion extendida de Ctrl+C.\n");
-    printf("ENTRAR         Cambia al directorio especificado (sustituye a CD).\n");
-    printf("LIMPIAR        Borra la pantalla.\n");
-    printf("LISTAR         Muestra una lista de archivos y subdirectorios.\n");
-    printf("SALIR          Sale del programa.\n");
+    printf("\nLista de comandos disponibles en ESPAÑOL:\n");
+    printf("-----------------------------------------\n");
+    printf("ASOCIAR         Muestra o modifica las asociaciones de extensiones.\n");
+    printf("ATRIBUTO        Muestra o cambia los atributos del archivo.\n");
+    printf("INTERRUMPIR     Establece/elimina comprobacion Ctrl+C.\n");
+    printf("EDITAR_B_D_A    Establece propiedades en la base de datos de arranque.\n");
+    printf("LISTAS_A_C      Muestra o modifica listas de control de acceso (ACL).\n");
+    printf("LLAMAR          Llama a un programa por lotes desde otro.\n");
+    printf("ENTRAR          Cambia el directorio actual.\n");
+    printf("CP_ACTIVA       Muestra o establece el numero de pagina de codigos activa.\n");
+    printf("REVISAR_DISCO   Chequea un disco y muestra un informe de estado.\n");
+    printf("REVISAR_NTFS    Muestra o modifica la comprobacion de disco al arrancar.\n");
+    printf("LIMPIAR         Borra la pantalla.\n");
+    printf("CMD             Inicia una nueva instancia del interprete de comandos.\n");
+    printf("COLOR           Establece los colores de primer plano y fondo.\n");
+    printf("COMPARAR        Compara el contenido de dos archivos o conjuntos.\n");
+    printf("COMPRIMIR       Muestra o altera la compresion de archivos.\n");
+    printf("CONVERTIR       Convierte volumenes FAT a NTFS.\n");
+    printf("COPIAR          Copia uno o mas archivos a otra ubicacion.\n");
+    printf("FECHA           Muestra o establece la fecha.\n");
+    printf("ELIMINAR        Elimina uno o mas archivos.\n");
+    printf("LISTAR          Muestra una lista de archivos y subdirectorios.\n");
+    printf("PARTICION       Muestra o configura las propiedades de particion.\n");
+    printf("TECLAS_DOS      Edita lineas de comando, recupera comandos y crea macros.\n");
+    printf("CONSULTAR_DRV   Muestra el estado y propiedades del controlador.\n");
+    printf("ECO             Muestra mensajes o activa/desactiva el eco del comando.\n");
+    printf("SALIR           Sale del interprete de comandos.\n");
+    printf("COMP_ARCH       Compara dos archivos o conjuntos de archivos.\n");
+    printf("BUSCAR          Busca una cadena de texto en uno o mas archivos.\n");
+    printf("BUSCAR_CAD      Busca cadenas en archivos.\n");
+    printf("PARA            Ejecuta un comando para cada archivo en un conjunto.\n");
+    printf("FORMATEAR       Formatea un disco para usar con Windows.\n");
+    printf("UTIL_SIST       Muestra o configura las propiedades de sistema de archivos.\n");
+    printf("TIPO_ARCH       Muestra o modifica los tipos de archivo.\n");
+    printf("IR_A            Dirige el interprete a una linea con etiqueta.\n");
+    printf("AYUDA           Proporciona informacion de ayuda para los comandos.\n");
+    printf("SI              Realiza el procesamiento condicional.\n");
+    printf("ETIQUETA        Crea, cambia o elimina la etiqueta de volumen.\n");
+    printf("CREARDIR        Crea un directorio.\n");
+    printf("MOVER           Mueve uno o mas archivos de un directorio a otro.\n");
+    printf("PAUSA           Suspende el proceso de un archivo por lotes.\n");
+    printf("IMPRIMIR        Imprime un archivo de texto.\n");
+    printf("INDICADOR       Cambia el simbolo del sistema.\n");
+    printf("BORRARDIR       Quita un directorio.\n");
+    printf("RECUPERAR       Recupera informacion legible de un disco defectuoso.\n");
+    printf("COMENTARIO      Registra comentarios en archivos por lotes.\n");
+    printf("RENOMBRAR       Cambia el nombre de uno o mas archivos.\n");
+    printf("REEMPLAZAR      Reemplaza archivos.\n");
+    printf("COPIA_ROBUSTA   Utilidad avanzada para copiar archivos y directorios.\n");
+    printf("ESTABLECER      Muestra, establece o quita variables de entorno.\n");
+    printf("APAGAR          Permite el apagado local o remoto de un equipo.\n");
+    printf("ORDENAR         Ordena la entrada.\n");
+    printf("INICIAR         Inicia una ventana separada para ejecutar un programa.\n");
+    printf("INFO_SISTEMA    Muestra propiedades y configuracion del equipo.\n");
+    printf("LISTA_TAREAS    Muestra todas las tareas que se ejecutan actualmente.\n");
+    printf("MATAR_TAREA     Termina procesos o aplicaciones en ejecucion.\n");
+    printf("HORA            Muestra o establece la hora del sistema.\n");
+    printf("TITULO          Establece el titulo de la ventana para una sesion.\n");
+    printf("ARBOL           Muestra graficamente la estructura de directorios.\n");
+    printf("MOSTRAR         Muestra el contenido de un archivo de texto.\n");
+    printf("VERSION         Muestra la version de Windows.\n");
+    printf("VOLUMEN         Muestra la etiqueta de volumen y el numero de serie.\n");
+    printf("COPIA_X         Copia archivos y arboles de directorios.\n");
+    printf("VOLVER          Regresa al directorio anterior.\n");
+    printf("-----------------------------------------\n");
 }
 %}
 
@@ -64,13 +149,13 @@ void imprimir_ayuda_general() {
 }
 
 %token <string> STRING
-%token ASSOC ATTRIB BREAK BCDEDIT CACLS CALL CD CHCP CHDIR CHKDSK CHKNTFS CLS CMD COLOR COMP COMPACT CONVERT COPY DATE DEL DIR DISKPART DOSKEY DRIVERQUERY ECHOTK ENDLOCAL ERASE EXIT FC FIND FINDSTR FOR FORMAT FSUTIL FTYPE GOTO GPRESULT HELP ICACLS IF LABEL MD MKDIR MKLINK MODE MORE MOVE OPENFILES PATH PAUSE POPD PRINT PROMPT PUSHD RD RECOVER REM REN RENAME REPLACE RMDIR ROBOCOPY SET SETLOCAL SC SCHTASKS SHIFT SHUTDOWN SORT START SUBST SYSTEMINFO TASKLIST TASKKILL TIME TITLE TREE TYPE VER VERIFY VOL XCOPY WMIC NLINE MODO
+%token ASSOC ATTRIB BREAK BCDEDIT CACLS CALL CD CHCP CHDIR CHKDSK CHKNTFS CLS CMD COLOR COMP COMPACT CONVERT COPY DATE DEL DIR DISKPART DOSKEY DRIVERQUERY ECHOTK ENDLOCAL ERASE EXIT FC FIND FINDSTR FOR FORMAT FSUTIL FTYPE GOTO GPRESULT HELP ICACLS IF LABEL MD MKDIR MKLINK MODE MORE MOVE OPENFILES PATH PAUSE POPD PRINT PROMPT PUSHD RD RECOVER REM REN RENAME REPLACE RMDIR ROBOCOPY SET SETLOCAL SC SCHTASKS SHIFT SHUTDOWN SORT START SUBST SYSTEMINFO TASKLIST TASKKILL TIME TITLE TREE TYPE VER VERIFY VOL XCOPY WMIC NLINE MODO VOLVER
 
 %type <string> argumentos
 
 %%
 
-input: /* vacio */
+input: 
      | input linea
      ;
 
@@ -81,7 +166,7 @@ linea: NLINE { mostrar_prompt(); }
      | error NLINE { yyerrok; mostrar_prompt(); }
      ;
 
-argumentos: /* vacio */ { $$ = strdup(""); }
+argumentos: { $$ = strdup(""); }
           | STRING { $$ = $1; }
           | argumentos STRING { 
                 char* combined = malloc(strlen($1) + strlen($2) + 2);
@@ -175,6 +260,7 @@ comando:
      | VOL argumentos        { ejecutar_comando("vol", $2); free($2); }
      | XCOPY argumentos      { ejecutar_comando("xcopy", $2); free($2); }
      | WMIC argumentos       { ejecutar_comando("wmic", $2); free($2); }
+     | VOLVER                { volver_directorio(); }
      ;
 
 %%
@@ -184,8 +270,7 @@ void yyerror(const char *s) {
 }
 
 int main() {
-    printf("Microsoft Windows [Version 10.0.19045.3803]\n");
-    printf("(c) Microsoft Corporation. Todos los derechos reservados.\n");
+    printf("CMD EN ESPAÑOL\n");
     mostrar_prompt();
     yyparse();
     return 0;

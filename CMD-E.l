@@ -99,10 +99,12 @@
 "VERSION"        { return VER; }
 "VERIFICAR"      { return VERIFY; }
 "VOLUMEN"        { return VOL; }
+"VOLVER"         { return VOLVER; }
 "COPIA_X"        { return XCOPY; }
 "INFO_WMI"       { return WMIC; }
 
 [a-zA-Z0-9\\._\-\*\/:]+ { yylval.string = strdup(yytext); return STRING; }
+\"[^\"]*\"       { yylval.string = strdup(yytext); return STRING; }
 "\n"             { return NLINE; }
 [ \t]            { /* ignorar espacios */ }
 .                { printf("Caracter no reconocido: %s\n", yytext); }
