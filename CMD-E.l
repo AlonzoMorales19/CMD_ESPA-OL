@@ -103,7 +103,7 @@
 "COPIA_X"        { return XCOPY; }
 "INFO_WMI"       { return WMIC; }
 
-[a-zA-Z0-9\\._\-\*\/:]+ { yylval.string = strdup(yytext); return STRING; }
+[a-zA-Z0-9\\._\-\*\/:\?\+\=\$\#\%\&\^\|\>\<\!\~\(\)\[\]\{\}\,\;]+ { yylval.string = strdup(yytext); return STRING; }
 \"[^\"]*\"       { yylval.string = strdup(yytext); return STRING; }
 "\n"             { return NLINE; }
 [ \t]            { /* ignorar espacios */ }
